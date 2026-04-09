@@ -29,6 +29,8 @@ This wrapper supports some variables to tweak some basic parameters of the workl
 - **QPS** and **BURST**: Defines client-go QPS and BURST parameters for kube-burner. 20 by default
 - **GC**: Garbage collect created namespaces. true by default
 - **EXTRA_FLAGS**: Extra flags that will be appended to the underlying kube-burner-ocp command, by default empty.
+- **KUBE_BURNER_VERSION**: Defines the version of kube-burner-ocp to use. By default kube-burner-ocp is downloaded from the github releases.
+- **KUBE_BURNER_URL**: Defines the URL of the kube-burner-ocp binary to use. It has higher precedence than KUBE_BURNER_VERSION.
 
 ### Using the EXTRA_FLAGS variable
 
