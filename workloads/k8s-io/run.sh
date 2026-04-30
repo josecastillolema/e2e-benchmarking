@@ -4,32 +4,22 @@ set -e
 source ./env.sh
 source ../../utils/common.sh
 
-K8S_IO_BINARY=./k8s-io
-K8S_IO_DIR=/tmp/k8s-io-build
-
-download_binary() {
-  echo "Downloading k8s-io binary from ${K8S_IO_URL}"
-  curl --fail --retry 8 --retry-all-errors -sS -L "${K8S_IO_URL}" -o ${K8S_IO_BINARY}
-  chmod +x ${K8S_IO_BINARY}
+# Download k8s-io function
+download_k8s_io() {
+  echo $1
+  curl --fail --retry 8 --retry-all-errors -sS -L ${K8S_IO_URL} | tar -xz ${K8S_IO_FILENAME}
 }
 
-build_binary() {
-  echo "Building k8s-io from source (${K8S_IO_REPO}@${K8S_IO_BRANCH})"
-  if [ -d "${K8S_IO_DIR}" ]; then
-    rm -rf "${K8S_IO_DIR}"
+# Download and extract k8s-io if we haven't already
+if [ -f "${K8S_IO_FILENAME}" ]; then
+  cmd_version=$(./${K8S_IO_FILENAME} --version | awk '/^Version:/{print $2}')
+  if [[ "${K8S_IO_VERSION}" == *"${cmd_version}"* ]]; then
+    echo "We already have the specified version available."
+  else
+    download_k8s_io "Switching k8s-io version."
   fi
-  git clone --depth 1 --branch "${K8S_IO_BRANCH}" "${K8S_IO_REPO}" "${K8S_IO_DIR}"
-  pushd "${K8S_IO_DIR}"
-  go build -o k8s-io .
-  popd
-  cp "${K8S_IO_DIR}/k8s-io" ${K8S_IO_BINARY}
-  rm -rf "${K8S_IO_DIR}"
-}
-
-if [ -n "${K8S_IO_URL}" ]; then
-  download_binary
 else
-  build_binary
+  download_k8s_io "Downloading k8s-io."
 fi
 
 log "###############################################"
@@ -38,15 +28,12 @@ log "UUID: ${UUID}"
 log "Config: ${CONFIG}"
 log "###############################################"
 
+# Capture exit code of k8s-io
 set +e
 
 JOB_START=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
-cmd="timeout ${TEST_TIMEOUT} ${K8S_IO_BINARY} -config ${CONFIG}"
-
-if [ "${CLEANUP}" = "true" ]; then
-  cmd+=" -cleanup"
-fi
+cmd="timeout ${TEST_TIMEOUT} ./${K8S_IO_FILENAME} -config ${CONFIG}"
 
 echo "Executing command: $cmd"
 eval "$cmd"
@@ -54,7 +41,12 @@ run=$?
 
 JOB_END=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
-log "Finished workload ${WORKLOAD}, exit code ($run)"
+if [ "${CLEANUP}" = "true" ]; then
+  echo "Cleaning up resources..."
+  ./${K8S_IO_FILENAME} -config ${CONFIG} -cleanup
+fi
+
+log "Finished workload ${0} ${CONFIG}, exit code ($run)"
 
 if [ $run -eq 0 ]; then
   JOB_STATUS="success"

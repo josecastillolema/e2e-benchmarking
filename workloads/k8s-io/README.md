@@ -32,9 +32,9 @@ $ CONFIG=/path/to/my-config.yaml ./run.sh
 | CONFIG | k8s-io YAML configuration file | `smoke.yaml` |
 | ES_SERVER | Elasticsearch/OpenSearch endpoint for CI metadata indexing | unset |
 | ES_INDEX | Elasticsearch/OpenSearch index name | `ripsaw-fio` |
-| K8S_IO_BRANCH | Git branch/tag to build from source | `main` |
-| K8S_IO_REPO | Git repository URL for k8s-io | `https://github.com/jtaleric/k8s-io.git` |
-| K8S_IO_URL | URL to a pre-built k8s-io binary (skips build from source) | unset |
+| K8S_IO_URL | URL to download k8s-io | `https://github.com/jtaleric/k8s-io/releases/download/${K8S_IO_VERSION}/k8s-io_${OS}_${K8S_IO_VERSION}_${ARCH}.tar.gz` |
+| K8S_IO_VERSION | k8s-io tag/version | `v0.1.0` |
+| OS | System to run k8s-io | `Linux` |
 | TEST_TIMEOUT | Timeout for the benchmark in seconds | `14400` |
 | UUID | UUID for the workload run | `uuidgen` |
 | WORKLOAD | Workload name used for indexing | `k8s-io` |
